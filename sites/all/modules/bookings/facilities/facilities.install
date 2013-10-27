@@ -1,0 +1,110 @@
+<?php
+
+require_once(drupal_get_path('module', 'facilities') . '/facilities_constants.php');
+
+function facilities_install() {
+
+}
+
+function facilities_schema() {
+	$schema[FACILITY_TABLE] = array(
+		'description' => t('list of facilities that contains general information'),
+		'fields' => array(
+			'id' => array(
+				'type' => 'serial',
+				'unsigned' => TRUE,
+				'not null' => TRUE,
+				'description' => t('facility ID')
+			),
+			'name' => array(
+				'type' => 'varchar',
+				'length' => '255',
+				'not null' => true,
+			),
+			'location' => array(
+				'type' => 'varchar',
+				'length' => '255',
+			),
+			'university' => array(
+				'type' => 'varchar',
+				'length' => '255',
+			),
+			'indoor' => array(
+				'type' => 'int',
+				'size' => 'tiny'
+			),
+			'capacity' => array(
+				'type' => 'int'
+			),
+			'cost' => array(
+				'type' => 'float',
+				'description' => t('cost per hour'),
+			)
+		),
+		'primary key' => array('id')
+	);
+
+	$schema[BBQ_TABLE] = array(
+		'description' => t('information specific to BBQ pits'),
+		'fields' => array(
+			'facility_id' => array(
+				'type' => 'int',
+				'not null' => true,
+				'unsigned' => true
+			),
+			'sheltered' => array(
+				'type' => 'int',
+				'size' => 'tiny',
+			),
+			'water_source' => array(
+				'type' => 'int',
+				'size' => 'tiny',
+			),
+			'grill' => array(
+				'type' => 'int',
+				'size' => 'tiny',
+			),
+		),
+		'primary key' => array('facility_id'),
+	);
+
+	$schema[SPORTS_TABLE] = array(
+		'description' => t('information specific to sports halls'),
+		'fields' => array(
+			'facility_id' => array(
+				'type' => 'int',
+				'not null' => true,
+				'unsigned' => true
+			),
+			'type' => array(
+				'type' => 'varchar',
+				'length' => '255',
+			),
+		),
+		'primary key' => array('facility_id'),
+	);
+
+	$schema[ROOM_TABLE] = array(
+		'description' => t('information specific to rooms'),
+		'fields' => array(
+			'facility_id' => array(
+				'type' => 'int',
+				'not null' => true,
+				'unsigned' => true
+			),
+			'projector' => array(
+				'type' => 'int',
+				'size' => 'tiny',
+			),
+			'whiteboard' => array(
+				'type' => 'int',
+			),
+			'power_source' => array(
+				'type' => 'int',
+			),
+		),
+		'primary key' => array('facility_id'),
+	);
+	
+	return $schema;
+}

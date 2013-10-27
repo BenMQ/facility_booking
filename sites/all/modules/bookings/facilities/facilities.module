@@ -1,0 +1,46 @@
+<?php
+require_once(drupal_get_path('module', 'facilities') . '/facilities_constants.php');
+
+function facilities_menu() {
+	$items[FACILITIES_MODULE_NAME. '/view'] = array(
+		'title' => t('Browse Facilities'),
+		'page callback' => 'drupal_get_form',
+		'page arguments' => array('facilities_view_room'),
+		'access callback' => true,
+		'file' => 'facilities_list.inc',
+		'type' => MENU_NORMAL_ITEM
+	);
+
+	$items[FACILITIES_MODULE_NAME . '/view/room'] = array(
+		'title' => t('Rooms'),
+		'page callback' => 'drupal_get_form',
+		'page arguments' => array('facilities_view_room'),
+		'access callback' => true,
+		'file' => 'facilities_list.inc',
+		'type' => MENU_DEFAULT_LOCAL_TASK,
+		'weight' => 0,
+	);
+
+	$items[FACILITIES_MODULE_NAME . '/view/bbq'] = array(
+		'title' => t('BBQ Pits'),
+		'page callback' => 'drupal_get_form',
+		'page arguments' => array('facilities_view_bbq'),
+		'access callback' => true,
+		'file' => 'facilities_list.inc',
+		'type' => MENU_LOCAL_TASK,
+		'weight' => 1
+	);
+
+	$items[FACILITIES_MODULE_NAME . '/view/sports'] = array(
+		'title' => t('Sports Facilities'),
+		'page callback' => 'drupal_get_form',
+		'page arguments' => array('facilities_view_sports'),
+		'access callback' => true,
+		'file' => 'facilities_list.inc',
+		'type' => MENU_LOCAL_TASK,
+		'weight' => 2
+	);
+
+	return $items;
+
+}

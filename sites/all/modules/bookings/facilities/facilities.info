@@ -1,0 +1,4 @@
+name = Facilities
+description = "Facility Information Module"
+core = 7.x
+package = Facility Booking
