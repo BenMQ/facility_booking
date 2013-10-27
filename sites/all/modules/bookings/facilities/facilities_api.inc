@@ -8,7 +8,7 @@ function facilities_list_rooms() {
 		->fields('r');
 	$res = $qry->execute();
 
-	$header = array('Name', 'Location', 'Indoor', 'Capacity', 'Cost', 'Projectors', 'whiteboard', 'Power Source', 'Today\'s Booking');
+	$header = array('Name', 'Location', 'Indoor', 'Capacity', 'Cost', 'Resources', 'Upcoming Bookings');
 	$rows = array();
 	foreach($res as $room) {
 		$rows[] = array(
@@ -16,10 +16,10 @@ function facilities_list_rooms() {
 			$room->location,
 			$room->indoor ? 'Yes' : 'No',
 			$room->capacity,
-			$room->cost,
-			$room->projector,
-			$room->whiteboard,
-			$room->power_source,
+			'$' . $room->cost,
+			'<b>Projectors:</b> ' . $room->projector . '<br />' .
+			'<b>Whiteboards:</b> ' . $room->whiteboard . '<br />' .
+			'<b>Power Plugs:</b> ' . $room->power_source,
 			'none'
 		);
 	}
