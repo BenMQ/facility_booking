@@ -31,14 +31,17 @@ function facilities_schema() {
 			),
 			'indoor' => array(
 				'type' => 'int',
-				'size' => 'tiny'
+				'size' => 'tiny',
+				'default' => '0',
 			),
 			'capacity' => array(
-				'type' => 'int'
+				'type' => 'int',
+				'default' => '0'
 			),
 			'cost' => array(
 				'type' => 'float',
 				'description' => t('cost per hour'),
+				'default' => '0'
 			)
 		),
 		'primary key' => array('id')
@@ -55,14 +58,17 @@ function facilities_schema() {
 			'sheltered' => array(
 				'type' => 'int',
 				'size' => 'tiny',
+				'default' => '0',
 			),
 			'water_source' => array(
 				'type' => 'int',
 				'size' => 'tiny',
+				'default' => '0',
 			),
 			'grill' => array(
 				'type' => 'int',
 				'size' => 'tiny',
+				'default' => '0',
 			),
 		),
 		'primary key' => array('facility_id'),
@@ -79,6 +85,7 @@ function facilities_schema() {
 			'type' => array(
 				'type' => 'varchar',
 				'length' => '255',
+				'default' => 'Others'
 			),
 		),
 		'primary key' => array('facility_id'),
@@ -95,12 +102,15 @@ function facilities_schema() {
 			'projector' => array(
 				'type' => 'int',
 				'size' => 'tiny',
+				'default' => '0',
 			),
 			'whiteboard' => array(
 				'type' => 'int',
+				'default' => '0',
 			),
 			'power_source' => array(
 				'type' => 'int',
+				'default' => '0',
 			),
 		),
 		'primary key' => array('facility_id'),
