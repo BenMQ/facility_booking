@@ -41,6 +41,94 @@ function facilities_menu() {
 		'weight' => 2
 	);
 
+	$items[FACILITIES_MODULE_NAME . '/view/room/%'] = array(
+		'title' => t('Room Information'),
+		'page callback' => 'drupal_get_form',
+		'page arguments' => array('facilities_view_item', 3),
+		'access callback' => true,
+		'file' => 'facilities_item.inc',
+		'type' => MENU_CALLBACK
+	);
+
+	$items[FACILITIES_MODULE_NAME . '/view/bbq/%'] = array(
+		'title' => t('BBQ Pit Information'),
+		'page callback' => 'drupal_get_form',
+		'page arguments' => array('facilities_view_item', 3),
+		'access callback' => true,
+		'file' => 'facilities_item.inc',
+		'type' => MENU_CALLBACK
+	);
+
+	$items[FACILITIES_MODULE_NAME . '/view/sports/%'] = array(
+		'title' => t('Sports Facility Information'),
+		'page callback' => 'drupal_get_form',
+		'page arguments' => array('facilities_view_item', 3),
+		'access callback' => true,
+		'file' => 'facilities_item.inc',
+		'type' => MENU_CALLBACK
+	);
+
+	$items[FACILITIES_MODULE_NAME . '/edit'] = array(
+		'title' => t('Manage Facilities'),
+		'page callback' => 'drupal_get_form',
+		'page arguments' => array('facilities_edit_new'),
+		'access callback' => true,
+		'file' => 'facilities_edit.inc',
+		'type' => MENU_NORMAL_ITEM,
+	);
+
+	$items[FACILITIES_MODULE_NAME . '/edit/new/bbq'] = array(
+		'title' => t('Add New BBQ Pit'),
+		'page callback' => 'drupal_get_form',
+		'page arguments' => array('facilities_edit', 0, BBQ),
+		'access callback' => true,
+		'file' => 'facilities_edit.inc',
+		'type' => MENU_LOCAL_ACTION,
+	);
+	$items[FACILITIES_MODULE_NAME . '/edit/new/sports'] = array(
+		'title' => t('Add New Sports Facility'),
+		'page callback' => 'drupal_get_form',
+		'page arguments' => array('facilities_edit', 0, SPORTS),
+		'access callback' => true,
+		'file' => 'facilities_edit.inc',
+		'type' => MENU_LOCAL_ACTION,
+	);
+	$items[FACILITIES_MODULE_NAME . '/edit/new/room'] = array(
+		'title' => t('Add New Room'),
+		'page callback' => 'drupal_get_form',
+		'page arguments' => array('facilities_edit', 0, ROOM),
+		'access callback' => true,
+		'file' => 'facilities_edit.inc',
+		'type' => MENU_LOCAL_ACTION,
+	);
+	$items[FACILITIES_MODULE_NAME . '/edit/%'] = array(
+		'title' => t('Edit Facility Information'),
+		'page callback' => 'drupal_get_form',
+		'page arguments' => array('facilities_edit', 2),
+		'access callback' => true,
+		'file' => 'facilities_edit.inc',
+		'type' => MENU_CALLBACK
+	);
+
+	$items[FACILITIES_MODULE_NAME . '/auto_complete_university'] = array(
+		'page callback' => 'auto_complete_university',
+		'access callback' => true,
+		'file' => 'facilities_api.inc',
+		'type' => MENU_CALLBACK
+	);
+	$items[FACILITIES_MODULE_NAME . '/auto_complete_location'] = array(
+		'page callback' => 'auto_complete_location',
+		'access callback' => true,
+		'file' => 'facilities_api.inc',
+		'type' => MENU_CALLBACK
+	);
+	$items[FACILITIES_MODULE_NAME . '/auto_complete_type'] = array(
+		'page callback' => 'auto_complete_type',
+		'access callback' => true,
+		'file' => 'facilities_api.inc',
+		'type' => MENU_CALLBACK
+	);
+
 	return $items;
 
 }

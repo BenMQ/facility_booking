@@ -19,6 +19,13 @@ function facilities_list_search_form_common($capacity_opt = array(), $cost_opt =
 		'#collapsed' => FALSE,
 	);
 
+	$form['location'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Location'),
+		'#size' => 50,
+		'#autocomplete_path' => FACILITIES_MODULE_NAME . '/auto_complete_location'
+	);
+
 	$form['indoor'] = array(
 		'#type' => 'select',
 		'#title' => 'Indoor / outdoor',
@@ -80,9 +87,106 @@ function facilities_list_common_query($search, $table) {
 		$qry->condition('f.cost', $cost, '<');
 	}
 
+	if (isset($search['location']) && trim($search['location'])) {
+		$qry->condition('f.location', '%'.trim($search['location']).'%', 'LIKE');
+	}
+
 	return $qry;
 }
 
+function facilities_get_by_id($id, $type = null) {
+	if ($type == null) {
+		$type = facilities_get_type_by_id($id);
+	}
+	if ($type == NOT_FOUND) {
+		drupal_not_found();
+	}
+	$qry = db_select(FACILITY_TABLE, 'f');
+	$qry->join(FACILITY_TABLE . '_' . $type, 'special', 'special.facility_id = f.id');
+	$qry->condition('f.id', $id)
+		->fields('f')
+		->fields('special');
+	$entry = $qry -> execute();
+	
+	return $entry;
+}
+
+function facilities_render_by_id($id, $type = null) {
+	if ($type == null) {
+		$type = facilities_get_type_by_id($id);
+	}
+	$entry = facilities_get_by_id($id);
+	switch ($type) {
+		case BBQ:
+			return facilities_render_bbq($entry, false);
+			break;
+		case SPORTS:
+			return facilities_render_sports($entry, false);
+			break;
+		case ROOM:
+			return facilities_render_room($entry, false);
+			break;
+		default:
+			drupal_not_found();
+	}
+}
+
+function facilities_get_type_by_id($id) {
+	$bbq = db_select(BBQ_TABLE, 's')
+			->condition('s.facility_id', $id)
+			->fields('s')
+			->execute();
+	if ($bbq->rowCount() > 0) {
+		return BBQ;
+	}
+
+	$sports = db_select(SPORTS_TABLE, 's')
+			->condition('s.facility_id', $id)
+			->fields('s')
+			->execute();
+	if ($sports->rowCount() > 0) {
+		return SPORTS;
+	}
+
+	$room = db_select(ROOM_TABLE, 's')
+			->condition('s.facility_id', $id)
+			->fields('s')
+			->execute();
+	if ($room->rowCount() > 0) {
+		return ROOM;
+	}
+
+	return NOT_FOUND;
+}
+
+function facilities_create_common($values) {
+	$qry = db_insert(FACILITY_TABLE)
+		->fields(array(
+			'name' => $values['name'],
+			'location' => $values['location'],
+			'university' => $values['university'],
+			'indoor' => $values['indoor'],
+			'capacity' => $values['capacity'],
+			'cost' => $values['cost']
+			));
+	$res = $qry -> execute();
+	return $res;
+}
+
+function facilities_update_common($values, $id) {
+	$qry = db_update(FACILITY_TABLE)
+		->fields(array(
+			'name' => $values['name'],
+			'location' => $values['location'],
+			'university' => $values['university'],
+			'indoor' => $values['indoor'],
+			'capacity' => $values['capacity'],
+			'cost' => $values['cost']
+			))
+		->condition('id', $id);
+	$res = $qry -> execute();
+	return $res;
+}
 /*
  * ########   #######   #######  ##     ## 
  * ##     ## ##     ## ##     ## ###   ### 
@@ -98,21 +202,21 @@ function facilities_list_search_form_room() {
 
 	$form['projector'] = array(
 		'#type' => 'textfield',
-		'#title' => 'Projectors required',
+		'#title' => 'Projectors Required',
 		'#size' => 8,
 		'#element_validate' => array('facilities_positive_int_field_validator')
 	);
 
 	$form['whiteboard'] = array(
 		'#type' => 'textfield',
-		'#title' => 'Whiteboards required',
+		'#title' => 'Whiteboards Required',
 		'#size' => 8,
 		'#element_validate' => array('facilities_positive_int_field_validator')
 	);
 
 	$form['power_source'] = array(
 		'#type' => 'textfield',
-		'#title' => 'Power Plugs required',
+		'#title' => 'Power Plugs Required',
 		'#size' => 8,
 		'#element_validate' => array('facilities_positive_int_field_validator')
 	);
@@ -143,11 +247,17 @@ function facilities_list_room($search) {
 	}
 
 	$res = $qry->execute();
+	return facilities_render_room($res);
+}
 
-	$header = array('Name', 'Location', 'Indoor', 'Capacity', 'Cost', 'Resources', 'Actions');
+function facilities_render_room($entry, $with_action = true) {
+	$header = array('Name', 'Location', 'Indoor', 'Capacity', 'Cost', 'Resources');
+	if ($with_action) {
+		$header[] = 'Actions';
+	}
 	$rows = array();
-	foreach($res as $room) {
-		$rows[] = array(
+	foreach($entry as $room) {
+		$row = array(
 			$room->name,
 			$room->location,
 			$room->indoor ? 'Yes' : 'No',
@@ -155,11 +265,28 @@ function facilities_list_room($search) {
 			'$' . $room->cost . '/hr',
 			'<b>Projectors:</b> ' . $room->projector . '<br />' .
 			'<b>Whiteboards:</b> ' . $room->whiteboard . '<br />' .
-			'<b>Power Plugs:</b> ' . $room->power_source,
-			'View / Book'
+			'<b>Power Plugs:</b> ' . $room->power_source
 		);
+		if ($with_action) {
+			$action = l('View / Book', FACILITIES_MODULE_NAME . '/view/room/' . $room->id);
+			$action .= '<br />';
+			$action .= l('Edit information', FACILITIES_MODULE_NAME . '/edit/' . $room->id);
+			$row[] = $action;
+		}
+		$rows[] = $row;
 	}
 	return theme('table', array('header' => $header, 'rows' => $rows, 'empty' => t('No results found')));
+}
+
+function facilities_update_room($values, $id) {
+	$qry = db_merge(ROOM_TABLE)
+		->key(array('facility_id' => $id))
+		->fields(array(
+			'projector' => $values['projector'],
+			'whiteboard' => $values['whiteboard'],
+			'power_source' => $values['power_source']
+		));
+	return $qry -> execute();
 }
 /*
  *  ######  ########   #######  ########  ########  ######  
@@ -177,7 +304,13 @@ function facilities_list_search_form_sports() {
 	$form['type'] = array(
 		'#type' => 'textfield',
 		'#title' => 'Facility type',
-		'#size' => 80
+		'#size' => 50,
+		'#autocomplete_path' => FACILITIES_MODULE_NAME . '/auto_complete_type'
+	);
+
+	$form['submit'] = array(
+		'#type' => 'submit',
+		'#value' => 'Search'
 	);
 
 	return $form;
@@ -187,29 +320,49 @@ function facilities_list_search_form_sports() {
 function facilities_list_sports($search) {
 	$qry = facilities_list_common_query($search, SPORTS_TABLE);
 
-	if (isset($search['type']) && $search['type']) {
-		$required = intval($search['type']);
-		$qry->condition('special.type', $required);
+	if (isset($search['type']) && trim($search['type'])) {
+		$qry->condition('special.type', '%' . trim($search['type']) . '%', 'LIKE');
 	}
 
 	$res = $qry->execute();
 
-	$header = array('Name', 'Location', 'Type', 'Indoor', 'Capacity', 'Cost', 'Actions');
+	return facilities_render_sports($res);
+}
+
+function facilities_render_sports($entry, $with_action = true) {
+	$header = array('Name', 'Location', 'Type', 'Indoor', 'Capacity', 'Cost');
+	if ($with_action) {
+		$header[] = 'Actions';
+	}
 	$rows = array();
-	foreach($res as $sports) {
-		$rows[] = array(
+	foreach($entry as $sports) {
+		$row = array(
 			$sports->name,
 			$sports->location,
 			$sports->type,
 			$sports->indoor ? 'Yes' : 'No',
 			$sports->capacity,
-			'$' . $sports->cost . '/hr',
-			'View / Book'
+			'$' . $sports->cost . '/hr'
 		);
+		if ($with_action) {
+			$action = l('View / Book', FACILITIES_MODULE_NAME . '/view/sports/' . $sports->id);
+			$action .= '<br />';
+			$action .= l('Edit information', FACILITIES_MODULE_NAME . '/edit/' . $sports->id);
+			$row[] = $action;
+		}
+		$rows[] = $row;
 	}
 	return theme('table', array('header' => $header, 'rows' => $rows, 'empty' => t('No results found')));
 }
 
+function facilities_update_sports($values, $id) {
+	$qry = db_merge(SPORTS_TABLE)
+		->key(array('facility_id' => $id))
+		->fields(array(
+			'type' => $values['type']
+		));
+	return $qry -> execute();
+}
 /*
  * ########  ########   #######  
  * ##     ## ##     ## ##     ## 
@@ -242,7 +395,7 @@ function facilities_list_search_form_bbq() {
 
 	$form['grill'] = array(
 		'#type' => 'textfield',
-		'#title' => 'Grills required',
+		'#title' => 'Grills Required',
 		'#size' => 8,
 		'#element_validate' => array('facilities_positive_int_field_validator')
 	);
@@ -276,10 +429,17 @@ function facilities_list_bbq($search) {
 	}
 	$res = $qry->execute();
 
-	$header = array('Name', 'Location', 'Indoor', 'Capacity', 'Cost', 'Resources', 'Actions');
+	return facilities_render_bbq($res);
+}
+
+function facilities_render_bbq($entry, $with_action = true) {
+	$header = array('Name', 'Location', 'Indoor', 'Capacity', 'Cost', 'Resources');
+	if ($with_action) {
+		$header[] = 'Actions';
+	}
 	$rows = array();
-	foreach($res as $bbq) {
-		$rows[] = array(
+	foreach($entry as $bbq) {
+		$row = array(
 			$bbq->name,
 			$bbq->location,
 			$bbq->indoor ? 'Yes' : 'No',
@@ -287,11 +447,28 @@ function facilities_list_bbq($search) {
 			'$' . $bbq->cost . '/hr',
 			'<b>Sheltered:</b> ' . ($bbq->sheltered ? 'Yes' : 'No') . '<br />' .
 			'<b>Has water source:</b> ' . ($bbq->water_source ? 'Yes' : 'No') . '<br />' .
-			'<b>Grills:</b> ' . $bbq->grill,
-			'View / Book'
+			'<b>Grills:</b> ' . $bbq->grill
 		);
+		if ($with_action) {
+			$action = l('View / Book', FACILITIES_MODULE_NAME . '/view/bbq/' . $bbq->id);
+			$action .= '<br />';
+			$action .= l('Edit information', FACILITIES_MODULE_NAME . '/edit/' . $bbq->id);
+			$row[] = $action;
+		}
+		$rows[] = $row;
 	}
 	return theme('table', array('header' => $header, 'rows' => $rows, 'empty' => t('No results found')));
+}
+
+function facilities_update_bbq($values, $id) {
+	$qry = db_merge(BBQ_TABLE)
+		->key(array('facility_id' => $id))
+		->fields(array(
+			'sheltered' => $values['sheltered'],
+			'water_source' => $values['water_source'],
+			'grill' => $values['grill']
+		));
+	return $qry -> execute();
 }
 /* 
  * ##     ## ######## ##       ########  ######## ########  
@@ -311,4 +488,69 @@ function facilities_positive_int_field_validator($element, &$form_state, $form) 
 	if (intval($element['#value']) <= 0 && $element['#value'] != '0') {
 		form_error($element, 'Please enter a valid positive integer');
 	}
+}
+
+
+function facilities_positive_float_field_validator($element, &$form_state, $form) {
+	if (empty($element['#value'])) {
+		return true;
+	}
+
+	if (floatval($element['#value']) <= 0 && substr($element['#value'], 0, 1) != '0') {
+		form_error($element, 'Please enter a valid positive number');
+	}
+}
+
+function auto_complete_university($string ='') {
+	$qry = db_select(FACILITY_TABLE, 'f')
+		->fields('f', array(
+			'university'
+		));
+	if (strlen($string) > 1) {
+		$qry->condition('f.university', '%'.$string.'%', 'LIKE');
+	}
+	$qry->distinct();
+	$res = $qry -> execute();
+	$matches = array();
+	foreach($res as $entry) {
+		$matches[$entry->university] = check_plain($entry->university);
+	}
+
+	drupal_json_output($matches);
+}
+
+function auto_complete_location($string ='') {
+	$qry = db_select(FACILITY_TABLE, 'f')
+		->fields('f', array(
+			'location'
+		));
+	if (strlen($string) > 1) {
+		$qry->condition('f.location', '%'.$string.'%', 'LIKE');
+	}
+	$qry->distinct();
+	$res = $qry -> execute();
+	$matches = array();
+	foreach($res as $entry) {
+		$matches[$entry->location] = check_plain($entry->location);
+	}
+
+	drupal_json_output($matches);
+}
+
+function auto_complete_type($string ='') {
+	$qry = db_select(SPORTS_TABLE, 'f')
+		->fields('f', array(
+			'type'
+		));
+	if (strlen($string) > 1) {
+		$qry->condition('f.type', '%'.$string.'%', 'LIKE');
+	}
+	$qry->distinct();
+	$res = $qry -> execute();
+	$matches = array();
+	foreach($res as $entry) {
+		$matches[$entry->type] = check_plain($entry->type);
+	}
+
+	drupal_json_output($matches);
 }
