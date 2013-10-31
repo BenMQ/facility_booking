@@ -115,5 +115,39 @@ function facilities_schema() {
 		'primary key' => array('facility_id'),
 	);
 	
+	$schema[BOOKING_TABLE] = array(
+		'description' => t('booking info'),
+		'fields' => array(
+			'id' => array(
+				'type' => 'serial',
+				'unsigned' => true,
+				'not null' => true,
+			),
+			'user_id' => array(
+				'type' => 'int',
+				'not null' => true
+			),
+			'facility_id' => array(
+				'type' => 'int',
+				'not null' => true
+			),
+			'date' => array(
+				'type' => 'date',
+				'mysql_type' => 'date',
+				'not null' => true
+			),
+			'start' => array(
+				'type' => 'int',
+				'not null' => true,
+				'unsigned' => true
+			),
+			'end' => array(
+				'type' => 'int',
+				'not null' => true,
+				'unsigned' => true
+			),
+		),
+		'primary key' => array('id')
+	);
 	return $schema;
 }
