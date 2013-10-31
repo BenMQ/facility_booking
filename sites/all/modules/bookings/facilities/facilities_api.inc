@@ -440,7 +440,7 @@ function facilities_render_bbq($entry, $with_action = true) {
 	$rows = array();
 	foreach($entry as $bbq) {
 		$row = array(
-			$bbq->name,
+			array('data' => $bbq->name, 'rowspan' => '2'),
 			$bbq->location,
 			$bbq->indoor ? 'Yes' : 'No',
 			$bbq->capacity,
@@ -456,6 +456,8 @@ function facilities_render_bbq($entry, $with_action = true) {
 			$row[] = $action;
 		}
 		$rows[] = $row;
+		$booking = facilities_render_booking_by_facility_id($bbq->id, '2010-1-1', '2019-1-1');
+		$rows[] = array(array('data' => $booking, 'colspan' => 6));
 	}
 	return theme('table', array('header' => $header, 'rows' => $rows, 'empty' => t('No results found')));
 }
@@ -469,6 +471,81 @@ function facilities_update_bbq($values, $id) {
 			'grill' => $values['grill']
 		));
 	return $qry -> execute();
+}
+
+
+function facilities_get_booking_by_facility_id($facility, $start_date, $end_date) {
+	$qry = db_select(BOOKING_TABLE, 'b')
+		->condition('b.date', array($start_date, $end_date), 'BETWEEN')
+		->condition('b.facility_id', $facility)
+		->fields('b', array(
+			'user_id',
+			'date',
+			'start',
+			'end'));
+	$res = $qry->execute();
+	return $res;
+}
+
+function facilities_render_booking_by_facility_id($facility, $start_date, $end_date) {
+	$bookings = facilities_get_booking_by_facility_id($facility, $start_date, $end_date);
+	$output = '';
+	$counter = 0;
+	foreach ($bookings as $booking) {
+		$output .= format_date_string($booking->date) . ' ' . $booking->start . ':00 ~ ' . $booking->end . ':00<br/>';
+	}
+	if (strlen($output) == 0) {
+		return 'No bookings found';
+	} else {
+		return '<b>Bookings:</b><br/>' . $output;
+	}
+}
+
+
+function facilities_make_booking($facility, $uid, $date, $from, $to) {
+	$cond1 = db_and()
+		->condition('b.start', $from, '<=')
+		->condition('b.end', $from, '>');
+	$cond2 = db_and()
+		->condition('b.start', $from, '>=')
+		->condition('b.start', $to, '<=');
+
+	$qry = db_select(BOOKING_TABLE, 'b')
+		->condition('b.facility_id', $facility)
+		->condition('b.date', $date)
+		->condition(db_or()
+			->condition($cond1)
+			->condition($cond2)
+			)
+		->fields('b', array(
+			'start',
+			'end'
+		));
+	$res = $qry->execute();
+	if ($res->rowCount() > 0) {
+		drupal_set_message('Your booking overlaps with existing entries', 'error');
+		return false;
+	}
+	$qry = db_select(BOOKING_TABLE, 'b')
+		->condition('b.facility_id', $facility)
+		->condition('b.date', $date)
+		->condition('b.user_id', $uid)
+		->fields('b', array(
+			'id'));
+	$res = $qry->execute();
+	if ($res->rowCount() > 0) {
+		drupal_set_message('You have made an booking for that day', 'error');
+		return false;
+	}
+	$qry = db_insert(BOOKING_TABLE)
+		->fields(array(
+			'user_id' => $uid,
+			'facility_id' => $facility,
+			'date' => $date,
+			'start' => $from,
+			'end' => $to,
+		));
+	$qry->execute();
 }
 /* 
  * ##     ## ######## ##       ########  ######## ########  
@@ -553,4 +630,8 @@ function auto_complete_type($string ='') {
 	}
 
 	drupal_json_output($matches);
+}
+
+function format_date_string($str) {
+	return date('j M', strtotime($str));
 }
