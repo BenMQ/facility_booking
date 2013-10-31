@@ -67,7 +67,6 @@ function facilities_schema() {
 			),
 			'grill' => array(
 				'type' => 'int',
-				'size' => 'tiny',
 				'default' => '0',
 			),
 		),
