@@ -11,7 +11,7 @@ require_once(drupal_get_path('module', 'facilities') . '/facilities_constants.ph
  *  ######   #######  ##     ## ##     ##  #######  ##    ## 
  */  
 
-function facilities_list_search_form_common() {
+function facilities_list_search_form_common($capacity_opt = array(), $cost_opt = array()) {
 	$form = array(
 		'#type' => 'fieldset',
 		'#title' => t('Search'),
@@ -26,19 +26,25 @@ function facilities_list_search_form_common() {
 		'#default_value' => ''
 	);
 
+	if (empty($capacity_opt)) {
+		$capacity_opt = array('' => 'Any', '0-20' => '< 20', '20-50' => '20 ~ 50',
+							'50-100' => '50 ~ 100', '100-200' => '100 ~ 200', '200' => '> 200');
+	}
 	$form['capacity'] = array(
 		'#type' => 'select',
 		'#title' => 'Capacity',
-		'#options' => array('' => 'Any', '0-20' => '< 20', '20-50' => '20 ~ 50',
-							'50-100' => '50 ~ 100', '100-200' => '100 ~ 200', '200' => '> 200'),
+		'#options' => $capacity_opt,
 		'#default_value' => ''
 	);
 
+	if (empty($cost_opt)) {
+		$cost_opt = array('' => 'Any', '0' => 'Free', '50' => '< 50',
+							'100' => '< 100', '500' => '< 500');
+	}
 	$form['cost'] = array(
 		'#type' => 'select',
 		'#title' => 'Cost per hour',
-		'#options' => array('' => 'Any', '0' => 'Free', '50' => '< 50',
-							'100' => '< 100', '500' => '< 500'),
+		'#options' => $cost_opt,
 		'#default_value' => ''
 	);
 
@@ -214,7 +220,11 @@ function facilities_list_sports($search) {
  * ########  ########   ##### ## 
  */
 function facilities_list_search_form_bbq() {
-	$form = facilities_list_search_form_common();
+	$capacity_opt = array('' => 'Any', '0-5' => '< 5', '5-10' => '5 ~ 10',
+						  '10-20' => '10 ~ 20', '20' => '> 20');
+	$cost_opt = array('' => 'Any', '0' => 'Free', '10' => '< 10',
+					  '20' => '< 20', '50' => '< 50');
+	$form = facilities_list_search_form_common($capacity_opt, $cost_opt);
 
 	$form['sheltered'] = array(
 		'#type' => 'select',
