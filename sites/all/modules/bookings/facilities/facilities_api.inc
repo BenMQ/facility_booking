@@ -264,7 +264,6 @@ function facilities_list_bbq($search) {
 		$required = intval($search['grill']);
 		$qry->condition('special.grill', $required, '>=');
 	}
-
 	$res = $qry->execute();
 
 	$header = array('Name', 'Location', 'Indoor', 'Capacity', 'Cost', 'Resources', 'Actions');
@@ -276,8 +275,8 @@ function facilities_list_bbq($search) {
 			$bbq->indoor ? 'Yes' : 'No',
 			$bbq->capacity,
 			'$' . $bbq->cost . '/hr',
-			'<b>Sheltered:</b> ' . $bbq->sheltered ? 'Yes' : 'No' . '<br />' .
-			'<b>Has water source:</b> ' . $bbq->water_source ? 'Yes' : 'No' . '<br />' .
+			'<b>Sheltered:</b> ' . ($bbq->sheltered ? 'Yes' : 'No') . '<br />' .
+			'<b>Has water source:</b> ' . ($bbq->water_source ? 'Yes' : 'No') . '<br />' .
 			'<b>Grills:</b> ' . $bbq->grill,
 			'View / Book'
 		);

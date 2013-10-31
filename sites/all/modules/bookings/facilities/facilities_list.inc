@@ -2,7 +2,7 @@
 require_once(drupal_get_path('module', 'facilities') . '/facilities_constants.php');
 require_once(drupal_get_path('module', FACILITIES_MODULE_NAME) . '/facilities_api.inc');
 
-function facilities_view_bbq($form) {
+function facilities_view_bbq($form, &$form_state) {
 	if (isset($form_state['values'])) {
 		$values = $form_state['values'];
 	} else {
@@ -22,7 +22,7 @@ function facilities_view_bbq_submit($form, &$form_state) {
 	$form_state['rebuild'] = true;
 }
 
-function facilities_view_sports($form) {
+function facilities_view_sports($form, &$form_state) {
 	if (isset($form_state['values'])) {
 		$values = $form_state['values'];
 	} else {
