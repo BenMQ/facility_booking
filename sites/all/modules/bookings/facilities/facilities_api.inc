@@ -1,6 +1,16 @@
 <?php
 require_once(drupal_get_path('module', 'facilities') . '/facilities_constants.php');
 
+/*
+ *  ######   #######  ##     ## ##     ##  #######  ##    ## 
+ * ##    ## ##     ## ###   ### ###   ### ##     ## ###   ## 
+ * ##       ##     ## #### #### #### #### ##     ## ####  ## 
+ * ##       ##     ## ## ### ## ## ### ## ##     ## ## ## ## 
+ * ##       ##     ## ##     ## ##     ## ##     ## ##  #### 
+ * ##    ## ##     ## ##     ## ##     ## ##     ## ##   ### 
+ *  ######   #######  ##     ## ##     ##  #######  ##    ## 
+ */  
+
 function facilities_list_search_form_common() {
 	$form = array(
 		'#type' => 'fieldset',
@@ -67,6 +77,16 @@ function facilities_list_common_query($search, $table) {
 	return $qry;
 }
 
+/*
+ * ########   #######   #######  ##     ## 
+ * ##     ## ##     ## ##     ## ###   ### 
+ * ##     ## ##     ## ##     ## #### #### 
+ * ########  ##     ## ##     ## ## ### ## 
+ * ##   ##   ##     ## ##     ## ##     ## 
+ * ##    ##  ##     ## ##     ## ##     ## 
+ * ##     ##  #######   #######  ##     ## 
+ */
+
 function facilities_list_search_form_room() {
 	$form = facilities_list_search_form_common();
 
@@ -100,7 +120,7 @@ function facilities_list_search_form_room() {
 }
 
 
-function facilities_list_rooms($search) {
+function facilities_list_room($search) {
 	$qry = facilities_list_common_query($search, ROOM_TABLE);
 
 	if (isset($search['projector']) && $search['projector']) {
@@ -135,7 +155,135 @@ function facilities_list_rooms($search) {
 	}
 	return theme('table', array('header' => $header, 'rows' => $rows, 'empty' => t('No results found')));
 }
+/*
+ *  ######  ########   #######  ########  ########  ######  
+ * ##    ## ##     ## ##     ## ##     ##    ##    ##    ## 
+ * ##       ##     ## ##     ## ##     ##    ##    ##       
+ *  ######  ########  ##     ## ########     ##     ######  
+ *       ## ##        ##     ## ##   ##      ##          ## 
+ * ##    ## ##        ##     ## ##    ##     ##    ##    ## 
+ *  ######  ##         #######  ##     ##    ##     ######  
+ */
 
+function facilities_list_search_form_sports() {
+	$form = facilities_list_search_form_common();
+
+	$form['type'] = array(
+		'#type' => 'textfield',
+		'#title' => 'Facility type',
+		'#size' => 80
+	);
+
+	return $form;
+}
+
+
+function facilities_list_sports($search) {
+	$qry = facilities_list_common_query($search, SPORTS_TABLE);
+
+	if (isset($search['type']) && $search['type']) {
+		$required = intval($search['type']);
+		$qry->condition('special.type', $required);
+	}
+
+	$res = $qry->execute();
+
+	$header = array('Name', 'Location', 'Type', 'Indoor', 'Capacity', 'Cost', 'Actions');
+	$rows = array();
+	foreach($res as $sports) {
+		$rows[] = array(
+			$sports->name,
+			$sports->location,
+			$sports->type,
+			$sports->indoor ? 'Yes' : 'No',
+			$sports->capacity,
+			'$' . $sports->cost . '/hr',
+			'View / Book'
+		);
+	}
+	return theme('table', array('header' => $header, 'rows' => $rows, 'empty' => t('No results found')));
+}
+
+/*
+ * ########  ########   #######  
+ * ##     ## ##     ## ##     ## 
+ * ##     ## ##     ## ##     ## 
+ * ########  ########  ##     ## 
+ * ##     ## ##     ## ##  ## ## 
+ * ##     ## ##     ## ##    ##  
+ * ########  ########   ##### ## 
+ */
+function facilities_list_search_form_bbq() {
+	$form = facilities_list_search_form_common();
+
+	$form['sheltered'] = array(
+		'#type' => 'select',
+		'#title' => 'Sheltered',
+		'#options' => array('' => 'Any', 'yes' => 'Yes', 'no' => 'No'),
+		'#default_value' => ''
+	);
+
+	$form['water_source'] = array(
+		'#type' => 'select',
+		'#title' => 'Has water source',
+		'#options' => array('' => 'Any', 'yes' => 'Yes', 'no' => 'No'),
+		'#default_value' => ''
+	);
+
+	$form['grill'] = array(
+		'#type' => 'textfield',
+		'#title' => 'Grills required',
+		'#size' => 8,
+		'#element_validate' => array('facilities_positive_int_field_validator')
+	);
+
+	$form['submit'] = array(
+		'#type' => 'submit',
+		'#value' => 'Search'
+	);
+
+	return $form;
+}
+
+
+function facilities_list_bbq($search) {
+	$qry = facilities_list_common_query($search, BBQ_TABLE);
+
+	
+	if (isset($search['sheltered']) && $search['sheltered']) {
+		$value = $search['sheltered'] === 'yes' ? 1 : 0;
+		$qry->condition('special.sheltered', $value);
+	}
+
+	if (isset($search['water_source']) && $search['water_source']) {
+		$value = $search['water_source'] === 'yes' ? 1 : 0;
+		$qry->condition('special.water_source', $value);
+	}
+
+	if (isset($search['grill']) && $search['grill']) {
+		$required = intval($search['grill']);
+		$qry->condition('special.grill', $required, '>=');
+	}
+
+	$res = $qry->execute();
+
+	$header = array('Name', 'Location', 'Indoor', 'Capacity', 'Cost', 'Resources', 'Actions');
+	$rows = array();
+	foreach($res as $bbq) {
+		$rows[] = array(
+			$bbq->name,
+			$bbq->location,
+			$bbq->indoor ? 'Yes' : 'No',
+			$bbq->capacity,
+			'$' . $bbq->cost . '/hr',
+			'<b>Sheltered:</b> ' . $bbq->sheltered ? 'Yes' : 'No' . '<br />' .
+			'<b>Has water source:</b> ' . $bbq->water_source ? 'Yes' : 'No' . '<br />' .
+			'<b>Grills:</b> ' . $bbq->grill,
+			'View / Book'
+		);
+	}
+	return theme('table', array('header' => $header, 'rows' => $rows, 'empty' => t('No results found')));
+}
 /* 
  * ##     ## ######## ##       ########  ######## ########  
  * ##     ## ##       ##       ##     ## ##       ##     ## 
