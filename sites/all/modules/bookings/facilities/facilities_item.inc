@@ -2,7 +2,7 @@
 require_once(drupal_get_path('module', 'facilities') . '/facilities_constants.php');
 require_once(drupal_get_path('module', FACILITIES_MODULE_NAME) . '/facilities_api.inc');
 
-function facilities_view_item($form, &$form_state, $id) {
+function facilities_view_item($form, &$form_state, $id, $date=null, $start=null, $end=null) {
 	$form['list'] = array(
 		'#type' => 'item',
 		'#markup' => facilities_render_by_id($id)
@@ -17,7 +17,7 @@ function facilities_view_item($form, &$form_state, $id) {
 		'#type' => 'date_popup',
 		'#title' => t('Date'),
 		'#date_format' => 'd-m-Y',
-		'#default_value' => date('Y-m-d', strtotime('+1 day')),
+		'#default_value' => ($date) ? $date : date('Y-m-d', strtotime('+1 day')),
 		'#size' => 10,
 		'#date_label_position' => 'none',
 		'#required' => true,
@@ -32,7 +32,7 @@ function facilities_view_item($form, &$form_state, $id) {
 		'#type' => 'select',
 		'#title' => 'From',
 		'#options' => $hours,
-		'#default_value' => '8',
+		'#default_value' => $start ? $start : '8',
 		'#required' => true,
 	);
 
@@ -40,13 +40,13 @@ function facilities_view_item($form, &$form_state, $id) {
 		'#type' => 'select',
 		'#title' => 'To',
 		'#options' => $hours,
-		'#default_value' => '10',
+		'#default_value' => $end ? $end : '10',
 		'#required' => true,
 	);
 
 	$form['submit'] = array(
 		'#type' => 'submit',
-		'#value' => 'Book Now'
+		'#value' => $date? 'Edit Booking' : 'Book Now'
 	);
 
 	return $form;
@@ -71,7 +71,6 @@ function facilities_view_item_validate($form, &$form_state) {
 	if ($form_state['values']['date'] > date('Y-m-d', strtotime('+2 weeks'))) {
 		form_error($form['date'], 'You can only place bookings at most 2 weeks in advance');
 	}
-
 }
 
 function facilities_view_item_submit($form, &$form_state) {

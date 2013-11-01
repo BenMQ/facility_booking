@@ -552,8 +552,14 @@ function facilities_render_booking_by_user_and_facility_name($facility_name, $ui
 	}
 	return theme('table', array('header' => $header, 'rows' => $rows, 'empty' => 'No entries found'));
 }
-
-
+function facilities_get_booking_by_id($id) {
+	$qry = db_select(BOOKING_TABLE, 'b');
+	$qry->join(FACILITY_TABLE, 'f', 'f.id = b.facility_id');
+	$qry->condition('b.date', date('Y-m-d'), '>=')
+		->condition('b.id', $id)
+		->fields('f', array('name'))->fields('b');
+	return $qry->execute();
+}
 function facilities_make_booking($facility, $uid, $date, $from, $to) {
 	$cond1 = db_and()
 		->condition('b.start', $from, '<=')
@@ -598,7 +604,46 @@ function facilities_make_booking($facility, $uid, $date, $from, $to) {
 			'end' => $to,
 		));
 	$qry->execute();
+
+	drupal_set_message("Booking successful!");
 }
+
+
+function facilities_modify_booking($booking_id, $facility, $uid, $date, $from, $to) {
+	$cond1 = db_and()
+		->condition('b.start', $from, '<=')
+		->condition('b.end', $from, '>');
+	$cond2 = db_and()
+		->condition('b.start', $from, '>=')
+		->condition('b.start', $to, '<=');
+
+	$qry = db_select(BOOKING_TABLE, 'b')
+		->condition('b.facility_id', $facility)
+		->condition('b.date', $date)
+		->condition(db_or()
+			->condition($cond1)
+			->condition($cond2)
+			)
+		->fields('b', array(
+			'start',
+			'end'
+		));
+	$res = $qry->execute();
+	if ($res->rowCount() > 0) {
+		drupal_set_message('Your booking overlaps with existing entries', 'error');
+		return false;
+	}
+	$qry = db_update(BOOKING_TABLE)
+		->fields(array(
+			'date' => $date,
+			'start' => $from,
+			'end' => $to,
+		))
+		->condition('id', $booking_id);
+	$qry->execute();
+	drupal_set_message("Booking information updated!");
+}
+
 /* 
  * ##     ## ######## ##       ########  ######## ########  
  * ##     ## ##       ##       ##     ## ##       ##     ## 

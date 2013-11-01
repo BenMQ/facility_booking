@@ -143,6 +143,24 @@ function facilities_menu() {
 		'file' => 'facilities_booking_list.inc',
 		'type' => MENU_NORMAL_ITEM
 	);
+
+	$items['booking/edit/%'] = array(
+		'title' => t('Manage Bookings'),
+		'page callback' => 'drupal_get_form',
+		'page arguments' => array('facilities_booking_edit', 2),
+		'access callback' => true,
+		'file' => 'facilities_booking_list.inc',
+		'type' => MENU_CALLBACK
+	);
+
+	$items['booking/delete/%'] = array(
+		'title' => t('Delete Bookings'),
+		'page callback' => 'drupal_get_form',
+		'page arguments' => array('facilities_booking_delete', 2),
+		'access callback' => true,
+		'file' => 'facilities_booking_list.inc',
+		'type' => MENU_CALLBACK
+	);
 	return $items;
 
 }
