@@ -68,6 +68,9 @@ function facilities_view_item_validate($form, &$form_state) {
 	if ($form_state['values']['date'] == date('Y-m-d') && $form_state['values']['to'] < date('h')) {
 		form_error($form['to'], 'Please do not select a time in the past');
 	}
+	if ($form_state['values']['date'] > date('Y-m-d', strtotime('+2 weeks'))) {
+		form_error($form['date'], 'You can only place bookings at most 2 weeks in advance');
+	}
 
 }
 
