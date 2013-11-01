@@ -274,6 +274,8 @@ function facilities_render_room($entry, $with_action = true) {
 			$row[] = $action;
 		}
 		$rows[] = $row;
+		$booking = facilities_render_booking_by_facility_id($room->id, date('Y-m-d'), '2019-1-1');
+		$rows[] = array(array('data' => $booking, 'colspan' => 6));
 	}
 	return theme('table', array('header' => $header, 'rows' => $rows, 'empty' => t('No results found')));
 }
@@ -351,6 +353,8 @@ function facilities_render_sports($entry, $with_action = true) {
 			$row[] = $action;
 		}
 		$rows[] = $row;
+		$booking = facilities_render_booking_by_facility_id($sports->id, date('Y-m-d'), '2019-1-1');
+		$rows[] = array(array('data' => $booking, 'colspan' => 6));
 	}
 	return theme('table', array('header' => $header, 'rows' => $rows, 'empty' => t('No results found')));
 }
@@ -456,7 +460,7 @@ function facilities_render_bbq($entry, $with_action = true) {
 			$row[] = $action;
 		}
 		$rows[] = $row;
-		$booking = facilities_render_booking_by_facility_id($bbq->id, '2010-1-1', '2019-1-1');
+		$booking = facilities_render_booking_by_facility_id($bbq->id, date('Y-m-d'), '2019-1-1');
 		$rows[] = array(array('data' => $booking, 'colspan' => 6));
 	}
 	return theme('table', array('header' => $header, 'rows' => $rows, 'empty' => t('No results found')));
@@ -492,13 +496,61 @@ function facilities_render_booking_by_facility_id($facility, $start_date, $end_d
 	$output = '';
 	$counter = 0;
 	foreach ($bookings as $booking) {
-		$output .= format_date_string($booking->date) . ' ' . $booking->start . ':00 ~ ' . $booking->end . ':00<br/>';
+		$user = user_load($booking->user_id);
+		$output .= $user->name . ': ' .format_date_string($booking->date) . ' ' . $booking->start . ':00 ~ ' . $booking->end . ':00<br/>';
 	}
 	if (strlen($output) == 0) {
 		return 'No bookings found';
 	} else {
 		return '<b>Bookings:</b><br/>' . $output;
 	}
+}
+
+function facilities_render_booking_by_user_and_facility_name($facility_name, $uid, $is_admin = false) {
+	$qry = db_select(BOOKING_TABLE, 'b');
+	$qry->join(FACILITY_TABLE, 'f', 'f.id = b.facility_id');
+	$qry->condition('b.date', date('Y-m-d'), '>=');
+	if ($facility_name != -1) {
+		$qry->condition('f.name', $facility_name);
+	}
+	if (!$is_admin) {
+		$qry->condition('b.user_id', $uid);
+	}
+	$qry->fields('b')
+		->fields('f', array('name'))
+		->orderBy('b.date', 'ASC')
+		->orderBy('b.start', 'ASC');
+	$res = $qry->execute();
+
+	if ($is_admin) {
+		$header = array('User', 'Facility', 'Booking Period', 'Actions');
+	} else {
+		$header = array('Facility', 'Booking Period', 'Actions');
+	}
+	$rows = [];
+
+	foreach($res as $entry) {
+		$username = user_load($entry->user_id)->name;
+		$facility_link = l($entry->name, FACILITIES_MODULE_NAME.'/view/'.facilities_get_type_by_id($entry->facility_id).'/'.$entry->facility_id);
+		$booking_string = format_date_string($entry->date) . ' ' . $entry->start . ':00 ~ ' . $entry->end . ':00';
+		$edit_link = l('Edit', 'booking/edit/' . $entry->id);
+		$delete_link = l('Delete', 'booking/delete/' . $entry->id);
+		if ($is_admin) {
+			$rows[] = array(
+				$username,
+				$facility_link,
+				$booking_string,
+				$edit_link . ' - ' . $delete_link
+			);
+		} else {
+			$rows[] = array(
+				$facility_link,
+				$booking_string,
+				$edit_link . ' - ' . $delete_link
+			);
+		}
+	}
+	return theme('table', array('header' => $header, 'rows' => $rows, 'empty' => 'No entries found'));
 }
 
 
@@ -631,6 +683,26 @@ function auto_complete_type($string ='') {
 
 	drupal_json_output($matches);
 }
+
+
+function auto_complete_name($string ='') {
+	$qry = db_select(FACILITY_TABLE, 'f')
+		->fields('f', array(
+			'name'
+		));
+	if (strlen($string) > 1) {
+		$qry->condition('f.name', '%'.$string.'%', 'LIKE');
+	}
+	$qry->distinct();
+	$res = $qry -> execute();
+	$matches = array();
+	foreach($res as $entry) {
+		$matches[$entry->name] = check_plain($entry->name);
+	}
+
+	drupal_json_output($matches);
+}
+
 
 function format_date_string($str) {
 	return date('j M', strtotime($str));

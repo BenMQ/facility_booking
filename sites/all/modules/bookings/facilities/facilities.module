@@ -128,7 +128,21 @@ function facilities_menu() {
 		'file' => 'facilities_api.inc',
 		'type' => MENU_CALLBACK
 	);
+	$items[FACILITIES_MODULE_NAME . '/auto_complete_name'] = array(
+		'page callback' => 'auto_complete_name',
+		'access callback' => true,
+		'file' => 'facilities_api.inc',
+		'type' => MENU_CALLBACK
+	);
 
+	$items['booking/view'] = array(
+		'title' => t('Manage Bookings'),
+		'page callback' => 'drupal_get_form',
+		'page arguments' => array('facilities_booking'),
+		'access callback' => true,
+		'file' => 'facilities_booking_list.inc',
+		'type' => MENU_NORMAL_ITEM
+	);
 	return $items;
 
 }
