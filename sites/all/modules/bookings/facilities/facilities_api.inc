@@ -63,6 +63,9 @@ function facilities_list_common_query($search, $table) {
 	$qry->join($table, 'special', 'special.facility_id = f.id');
 	$qry->fields('f')
 		->fields('special');
+	if (!is_admin()) {
+		$qry->condition('f.university', get_uni());
+	}
 
 
 	if (isset($search['indoor']) && $search['indoor']) {
@@ -258,7 +261,7 @@ function facilities_render_room($entry, $with_action = true) {
 	$rows = array();
 	foreach($entry as $room) {
 		$row = array(
-			$room->name,
+			array('data' => $room->name, 'rowspan' => '2'),
 			$room->location,
 			$room->indoor ? 'Yes' : 'No',
 			$room->capacity,
@@ -339,7 +342,7 @@ function facilities_render_sports($entry, $with_action = true) {
 	$rows = array();
 	foreach($entry as $sports) {
 		$row = array(
-			$sports->name,
+			array('data' => $sports->name, 'rowspan' => '2'),
 			$sports->location,
 			$sports->type,
 			$sports->indoor ? 'Yes' : 'No',
@@ -483,21 +486,30 @@ function facilities_get_booking_by_facility_id($facility, $start_date, $end_date
 		->condition('b.date', array($start_date, $end_date), 'BETWEEN')
 		->condition('b.facility_id', $facility)
 		->fields('b', array(
+			'id',
 			'user_id',
 			'date',
 			'start',
-			'end'));
+			'end'))
+		->orderBy('b.date', 'ASC')
+		->orderBy('b.start', 'ASC');
 	$res = $qry->execute();
 	return $res;
 }
 
 function facilities_render_booking_by_facility_id($facility, $start_date, $end_date) {
+	global $user;
 	$bookings = facilities_get_booking_by_facility_id($facility, $start_date, $end_date);
 	$output = '';
 	$counter = 0;
 	foreach ($bookings as $booking) {
-		$user = user_load($booking->user_id);
-		$output .= $user->name . ': ' .format_date_string($booking->date) . ' ' . $booking->start . ':00 ~ ' . $booking->end . ':00<br/>';
+		$account = user_load($booking->user_id);
+		$text = $account->name . ': ' .format_date_string($booking->date) . ' ' . $booking->start . ':00 ~ ' . $booking->end . ':00';
+		if ($booking->user_id == $user->uid || is_admin()) {
+			$output .= l($text, 'booking/edit/'.$booking->id).'<br/>';
+		} else {
+			$output .= $text.'<br/>';
+		}
 	}
 	if (strlen($output) == 0) {
 		return 'No bookings found';
@@ -506,14 +518,14 @@ function facilities_render_booking_by_facility_id($facility, $start_date, $end_d
 	}
 }
 
-function facilities_render_booking_by_user_and_facility_name($facility_name, $uid, $is_admin = false) {
+function facilities_render_booking_by_user_and_facility_name($facility_name, $uid) {
 	$qry = db_select(BOOKING_TABLE, 'b');
 	$qry->join(FACILITY_TABLE, 'f', 'f.id = b.facility_id');
 	$qry->condition('b.date', date('Y-m-d'), '>=');
 	if ($facility_name != -1) {
 		$qry->condition('f.name', $facility_name);
 	}
-	if (!$is_admin) {
+	if (!is_admin()) {
 		$qry->condition('b.user_id', $uid);
 	}
 	$qry->fields('b')
@@ -522,7 +534,7 @@ function facilities_render_booking_by_user_and_facility_name($facility_name, $ui
 		->orderBy('b.start', 'ASC');
 	$res = $qry->execute();
 
-	if ($is_admin) {
+	if (is_admin()) {
 		$header = array('User', 'Facility', 'Booking Period', 'Actions');
 	} else {
 		$header = array('Facility', 'Booking Period', 'Actions');
@@ -535,7 +547,7 @@ function facilities_render_booking_by_user_and_facility_name($facility_name, $ui
 		$booking_string = format_date_string($entry->date) . ' ' . $entry->start . ':00 ~ ' . $entry->end . ':00';
 		$edit_link = l('Edit', 'booking/edit/' . $entry->id);
 		$delete_link = l('Delete', 'booking/delete/' . $entry->id);
-		if ($is_admin) {
+		if (is_admin()) {
 			$rows[] = array(
 				$username,
 				$facility_link,
@@ -751,4 +763,17 @@ function auto_complete_name($string ='') {
 
 function format_date_string($str) {
 	return date('j M', strtotime($str));
+}
+function logged_in() {
+	global $user;
+	return $user && ($user->uid > 0);
+}
+function is_admin() {
+	global $user;
+	return logged_in() && $user->uid == 1;
+}
+
+function get_uni() {
+	global $user;
+	return db_select(UNI_TABLE, 'u')->condition('u.user_id', $user->uid)->fields('u', array('university'))->execute()->fetchField();
 }

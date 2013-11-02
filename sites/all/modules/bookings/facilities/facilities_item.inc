@@ -3,6 +3,7 @@ require_once(drupal_get_path('module', 'facilities') . '/facilities_constants.ph
 require_once(drupal_get_path('module', FACILITIES_MODULE_NAME) . '/facilities_api.inc');
 
 function facilities_view_item($form, &$form_state, $id, $date=null, $start=null, $end=null) {
+	drupal_set_message("You may book a facility 2 weeks in advance, with maximum 2 hours per booking and 1 booking per facility per day.");
 	$form['list'] = array(
 		'#type' => 'item',
 		'#markup' => facilities_render_by_id($id)
