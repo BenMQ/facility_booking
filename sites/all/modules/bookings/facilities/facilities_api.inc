@@ -93,7 +93,9 @@ function facilities_list_common_query($search, $table) {
 	if (isset($search['location']) && trim($search['location'])) {
 		$qry->condition('f.location', '%'.trim($search['location']).'%', 'LIKE');
 	}
-
+	$qry->orderBy('f.university');
+	$qry->orderBy(empty($search['sort_key']) ? 'f.name' : $search['sort_key'],
+				  empty($search['sort_order']) ? 'ASC' : $search['sort_order']);
 	return $qry;
 }
 
@@ -225,6 +227,20 @@ function facilities_list_search_form_room() {
 		'#element_validate' => array('facilities_positive_int_field_validator')
 	);
 
+	$options = array('' => 'Default', 'location' => 'Location', 'indoor' => 'Indoor/Outdoor', 'capacity' => 'Capacity', 'cost' => 'Cost',
+		'projector' => 'Projectors', 'whiteboard' => 'Whiteboards', 'power_source' => 'Power Plugs');
+	$form['sort_key'] = array(
+		'#type' => 'select',
+		'#title' => 'Sorted By',
+		'#options' => $options,
+	);
+
+	$form['sort_order'] = array(
+		'#type' => 'select',
+		'#title' => 'Sorting Order',
+		'#options' => array('' => 'Default', 'ASC' => 'Ascending', 'DESC' => 'Descending')
+	);
+
 	$form['submit'] = array(
 		'#type' => 'submit',
 		'#value' => 'Search'
@@ -315,6 +331,19 @@ function facilities_list_search_form_sports() {
 		'#autocomplete_path' => FACILITIES_MODULE_NAME . '/auto_complete_type'
 	);
 
+	$options = array('' => 'Default', 'location' => 'Location', 'indoor' => 'Indoor/Outdoor', 'capacity' => 'Capacity', 'cost' => 'Cost',
+		'type' => 'Type');
+	$form['sort_key'] = array(
+		'#type' => 'select',
+		'#title' => 'Sorted By',
+		'#options' => $options,
+	);
+
+	$form['sort_order'] = array(
+		'#type' => 'select',
+		'#title' => 'Sorting Order',
+		'#options' => array('' => 'Default', 'ASC' => 'Ascending', 'DESC' => 'Descending')
+	);
 	$form['submit'] = array(
 		'#type' => 'submit',
 		'#value' => 'Search'
@@ -407,6 +436,20 @@ function facilities_list_search_form_bbq() {
 		'#title' => 'Grills Required',
 		'#size' => 8,
 		'#element_validate' => array('facilities_positive_int_field_validator')
+	);
+
+	$options = array('' => 'Default', 'location' => 'Location', 'indoor' => 'Indoor/Outdoor', 'capacity' => 'Capacity', 'cost' => 'Cost',
+		'sheltered' => 'Sheltered', 'water_source' => 'Water Source', 'grill' => 'Grills');
+	$form['sort_key'] = array(
+		'#type' => 'select',
+		'#title' => 'Sorted By',
+		'#options' => $options,
+	);
+
+	$form['sort_order'] = array(
+		'#type' => 'select',
+		'#title' => 'Sorting Order',
+		'#options' => array('' => 'Default', 'ASC' => 'Ascending', 'DESC' => 'Descending')
 	);
 
 	$form['submit'] = array(
