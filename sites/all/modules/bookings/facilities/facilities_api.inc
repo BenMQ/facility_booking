@@ -262,7 +262,7 @@ function facilities_render_room($entry, $with_action = true) {
 	$rows = array();
 	foreach($entry as $room) {
 		$row = array(
-			array('data' => $room->name, 'rowspan' => '2'),
+			array('data' => $room->name . ' (' . $room->university.')', 'rowspan' => '2'),
 			$room->location,
 			$room->indoor ? 'Yes' : 'No',
 			$room->capacity,
@@ -344,7 +344,7 @@ function facilities_render_sports($entry, $with_action = true) {
 	$rows = array();
 	foreach($entry as $sports) {
 		$row = array(
-			array('data' => $sports->name, 'rowspan' => '2'),
+			array('data' => $sports->name. ' (' . $sports->university.')', 'rowspan' => '2'),
 			$sports->location,
 			$sports->type,
 			$sports->indoor ? 'Yes' : 'No',
@@ -449,7 +449,7 @@ function facilities_render_bbq($entry, $with_action = true) {
 	$rows = array();
 	foreach($entry as $bbq) {
 		$row = array(
-			array('data' => $bbq->name, 'rowspan' => '2'),
+			array('data' => $bbq->name . ' (' . $bbq->university.')', 'rowspan' => '2'),
 			$bbq->location,
 			$bbq->indoor ? 'Yes' : 'No',
 			$bbq->capacity,
