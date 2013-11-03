@@ -35,6 +35,7 @@ function facilities_booking_submit($form, &$form_state) {
 
 function facilities_booking_edit($form, &$form_state, $booking_id) {
 	global $user;
+
 	$booking = facilities_get_booking_by_id($booking_id)->fetchObject();
 
 	if ($booking && $booking->user_id == $user->uid) {
@@ -43,6 +44,10 @@ function facilities_booking_edit($form, &$form_state, $booking_id) {
 		drupal_not_found();
 		return;
 	}
+	$form['notice'] = array(
+		'#type' => 'item',
+		'#markup' => '<h3>You may book a facility 2 weeks in advance, with maximum 2 hours per booking and 1 booking per facility per day.</h3>'
+	);
 	$form['booking_id'] = array(
 		'#type' => 'hidden',
 		'#value' => $booking->id
