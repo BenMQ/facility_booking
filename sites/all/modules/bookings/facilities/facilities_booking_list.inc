@@ -38,7 +38,7 @@ function facilities_booking_edit($form, &$form_state, $booking_id) {
 
 	$booking = facilities_get_booking_by_id($booking_id)->fetchObject();
 
-	if ($booking && $booking->user_id == $user->uid) {
+	if ($booking && ($booking->user_id == $user->uid || is_admin())) {
 		$form = facilities_view_item($form, $form_state, $booking->facility_id, $booking->date, $booking->start, $booking->end);
 	} else {
 		drupal_not_found();
@@ -94,7 +94,7 @@ function facilities_booking_delete($form, &$form_state, $booking_id) {
 		->fields('b', array('user_id'))
 		->execute()
 		->fetchField();
-	if (!$uid || $uid != $user->uid) {
+	if (!$uid || ($uid != $user->uid && !is_admin())) {
 		drupal_access_denied();
 		return;
 	}
