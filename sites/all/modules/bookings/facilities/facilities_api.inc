@@ -273,6 +273,7 @@ function facilities_render_room($entry, $with_action = true) {
 		if ($with_action) {
 			$action = l('View / Book', FACILITIES_MODULE_NAME . '/view/room/' . $room->id);
 			$action .= '<br />';
+			if (is_admin())
 			$action .= l('Edit information', FACILITIES_MODULE_NAME . '/edit/' . $room->id);
 			$row[] = $action;
 		}
