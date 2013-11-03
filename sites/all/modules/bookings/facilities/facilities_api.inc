@@ -109,7 +109,7 @@ function facilities_get_by_id($id, $type = null) {
 	$qry->condition('f.id', $id)
 		->fields('f')
 		->fields('special');
-	$entry = $qry -> execute();
+	$entry = db_execute($qry);
 	
 	return $entry;
 }
@@ -137,24 +137,25 @@ function facilities_render_by_id($id, $type = null) {
 function facilities_get_type_by_id($id) {
 	$bbq = db_select(BBQ_TABLE, 's')
 			->condition('s.facility_id', $id)
-			->fields('s')
-			->execute();
+			->fields('s');
+	$bbq = db_execute($bbq);
+
 	if ($bbq->rowCount() > 0) {
 		return BBQ;
 	}
 
 	$sports = db_select(SPORTS_TABLE, 's')
 			->condition('s.facility_id', $id)
-			->fields('s')
-			->execute();
+			->fields('s');
+	$sports = db_execute($sports);
 	if ($sports->rowCount() > 0) {
 		return SPORTS;
 	}
 
 	$room = db_select(ROOM_TABLE, 's')
 			->condition('s.facility_id', $id)
-			->fields('s')
-			->execute();
+			->fields('s');
+	$room = db_execute($room);
 	if ($room->rowCount() > 0) {
 		return ROOM;
 	}
@@ -172,7 +173,7 @@ function facilities_create_common($values) {
 			'capacity' => $values['capacity'],
 			'cost' => $values['cost']
 			));
-	$res = $qry -> execute();
+	$res = db_execute($qry);
 	return $res;
 }
 
@@ -187,7 +188,7 @@ function facilities_update_common($values, $id) {
 			'cost' => $values['cost']
 			))
 		->condition('id', $id);
-	$res = $qry -> execute();
+	$res = db_execute($qry);
 	return $res;
 }
 /*
@@ -249,7 +250,7 @@ function facilities_list_room($search) {
 		$qry->condition('special.power_source', $required, '>=');
 	}
 
-	$res = $qry->execute();
+	$res = db_execute($qry);
 	return facilities_render_room($res);
 }
 
@@ -292,7 +293,7 @@ function facilities_update_room($values, $id) {
 			'whiteboard' => $values['whiteboard'],
 			'power_source' => $values['power_source']
 		));
-	return $qry -> execute();
+	return db_execute($qry);
 }
 /*
  *  ######  ########   #######  ########  ########  ######  
@@ -330,7 +331,7 @@ function facilities_list_sports($search) {
 		$qry->condition('special.type', '%' . trim($search['type']) . '%', 'LIKE');
 	}
 
-	$res = $qry->execute();
+	$res = db_execute($qry);
 
 	return facilities_render_sports($res);
 }
@@ -369,7 +370,7 @@ function facilities_update_sports($values, $id) {
 		->fields(array(
 			'type' => $values['type']
 		));
-	return $qry -> execute();
+	return db_execute($qry);
 }
 /*
  * ########  ########   #######  
@@ -435,7 +436,7 @@ function facilities_list_bbq($search) {
 		$required = intval($search['grill']);
 		$qry->condition('special.grill', $required, '>=');
 	}
-	$res = $qry->execute();
+	$res = db_execute($qry);
 
 	return facilities_render_bbq($res);
 }
@@ -478,7 +479,7 @@ function facilities_update_bbq($values, $id) {
 			'water_source' => $values['water_source'],
 			'grill' => $values['grill']
 		));
-	return $qry -> execute();
+	return db_execute($qry);
 }
 
 
@@ -494,7 +495,7 @@ function facilities_get_booking_by_facility_id($facility, $start_date, $end_date
 			'end'))
 		->orderBy('b.date', 'ASC')
 		->orderBy('b.start', 'ASC');
-	$res = $qry->execute();
+	$res = db_execute($qry);
 	return $res;
 }
 
@@ -533,7 +534,7 @@ function facilities_render_booking_by_user_and_facility_name($facility_name, $ui
 		->fields('f', array('name'))
 		->orderBy('b.date', 'ASC')
 		->orderBy('b.start', 'ASC');
-	$res = $qry->execute();
+	$res = db_execute($qry);
 
 	if (is_admin()) {
 		$header = array('User', 'Facility', 'Booking Period', 'Actions');
@@ -571,7 +572,7 @@ function facilities_get_booking_by_id($id) {
 	$qry->condition('b.date', date('Y-m-d'), '>=')
 		->condition('b.id', $id)
 		->fields('f', array('name'))->fields('b');
-	return $qry->execute();
+	return db_execute($qry);
 }
 function facilities_make_booking($facility, $uid, $date, $from, $to) {
 	$cond1 = db_and()
@@ -592,7 +593,7 @@ function facilities_make_booking($facility, $uid, $date, $from, $to) {
 			'start',
 			'end'
 		));
-	$res = $qry->execute();
+	$res = db_execute($qry);
 	if ($res->rowCount() > 0) {
 		drupal_set_message('Your booking overlaps with existing entries', 'error');
 		return false;
@@ -603,7 +604,7 @@ function facilities_make_booking($facility, $uid, $date, $from, $to) {
 		->condition('b.user_id', $uid)
 		->fields('b', array(
 			'id'));
-	$res = $qry->execute();
+	$res = db_execute($qry);
 	if ($res->rowCount() > 0) {
 		drupal_set_message('You have made an booking for that day', 'error');
 		return false;
@@ -616,7 +617,7 @@ function facilities_make_booking($facility, $uid, $date, $from, $to) {
 			'start' => $from,
 			'end' => $to,
 		));
-	$qry->execute();
+	db_execute($qry);
 
 	drupal_set_message("Booking successful!");
 }
@@ -641,7 +642,7 @@ function facilities_modify_booking($booking_id, $facility, $uid, $date, $from, $
 			'start',
 			'end'
 		));
-	$res = $qry->execute();
+	$res = db_execute($qry);
 	if ($res->rowCount() > 0) {
 		drupal_set_message('Your booking overlaps with existing entries', 'error');
 		return false;
@@ -653,7 +654,7 @@ function facilities_modify_booking($booking_id, $facility, $uid, $date, $from, $
 			'end' => $to,
 		))
 		->condition('id', $booking_id);
-	$qry->execute();
+	db_execute($qry);
 	drupal_set_message("Booking information updated!");
 }
 
@@ -777,4 +778,10 @@ function is_admin() {
 function get_uni() {
 	global $user;
 	return db_select(UNI_TABLE, 'u')->condition('u.user_id', $user->uid)->fields('u', array('university'))->execute()->fetchField();
+}
+
+function db_execute($qry) {
+	// uncomment the next line to display (almost) all executed queries
+	//dpq($qry);
+	return $qry->execute();
 }
