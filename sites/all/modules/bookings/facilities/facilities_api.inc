@@ -634,6 +634,7 @@ function facilities_modify_booking($booking_id, $facility, $uid, $date, $from, $
 	$qry = db_select(BOOKING_TABLE, 'b')
 		->condition('b.facility_id', $facility)
 		->condition('b.date', $date)
+		->condition('b.id', $booking_id, '<>')
 		->condition(db_or()
 			->condition($cond1)
 			->condition($cond2)
@@ -715,6 +716,9 @@ function auto_complete_location($string ='') {
 	if (strlen($string) > 1) {
 		$qry->condition('f.location', '%'.$string.'%', 'LIKE');
 	}
+	if (!is_admin()) {
+		$qry->condition('f.university', get_uni());
+	}
 	$qry->distinct();
 	$res = $qry -> execute();
 	$matches = array();
@@ -732,6 +736,9 @@ function auto_complete_type($string ='') {
 		));
 	if (strlen($string) > 1) {
 		$qry->condition('f.type', '%'.$string.'%', 'LIKE');
+	}
+	if (!is_admin()) {
+		$qry->condition('f.university', get_uni());
 	}
 	$qry->distinct();
 	$res = $qry -> execute();
@@ -751,6 +758,9 @@ function auto_complete_name($string ='') {
 		));
 	if (strlen($string) > 1) {
 		$qry->condition('f.name', '%'.$string.'%', 'LIKE');
+	}
+	if (!is_admin()) {
+		$qry->condition('f.university', get_uni());
 	}
 	$qry->distinct();
 	$res = $qry -> execute();
