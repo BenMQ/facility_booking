@@ -135,6 +135,24 @@ function facilities_menu() {
 		'file' => 'facilities_api.inc',
 		'type' => MENU_CALLBACK
 	);
+	$items[FACILITIES_MODULE_NAME . '/auto_complete_name_bbq'] = array(
+		'page callback' => 'auto_complete_name_bbq',
+		'access callback' => true,
+		'file' => 'facilities_api.inc',
+		'type' => MENU_CALLBACK
+	);
+	$items[FACILITIES_MODULE_NAME . '/auto_complete_name_sports'] = array(
+		'page callback' => 'auto_complete_name_sports',
+		'access callback' => true,
+		'file' => 'facilities_api.inc',
+		'type' => MENU_CALLBACK
+	);
+	$items[FACILITIES_MODULE_NAME . '/auto_complete_name_room'] = array(
+		'page callback' => 'auto_complete_name_room',
+		'access callback' => true,
+		'file' => 'facilities_api.inc',
+		'type' => MENU_CALLBACK
+	);
 
 	$items['booking/view'] = array(
 		'title' => t('Manage Bookings'),

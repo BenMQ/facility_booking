@@ -11,12 +11,19 @@ require_once(drupal_get_path('module', 'facilities') . '/facilities_constants.ph
  *  ######   #######  ##     ## ##     ##  #######  ##    ## 
  */  
 
-function facilities_list_search_form_common($capacity_opt = array(), $cost_opt = array()) {
+function facilities_list_search_form_common($capacity_opt = array(), $cost_opt = array(), $type) {
 	$form = array(
 		'#type' => 'fieldset',
 		'#title' => t('Search'),
 		'#collapsible' => TRUE,
 		'#collapsed' => FALSE,
+	);
+	
+	$form['name'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Name'),
+		'#size' => 50,
+		'#autocomplete_path' => FACILITIES_MODULE_NAME . '/auto_complete_name_' . $type
 	);
 
 	$form['location'] = array(
@@ -204,7 +211,7 @@ function facilities_update_common($values, $id) {
  */
 
 function facilities_list_search_form_room() {
-	$form = facilities_list_search_form_common();
+	$form = facilities_list_search_form_common(array(), array(), 'room');
 
 	$form['projector'] = array(
 		'#type' => 'textfield',
@@ -322,7 +329,7 @@ function facilities_update_room($values, $id) {
  */
 
 function facilities_list_search_form_sports() {
-	$form = facilities_list_search_form_common();
+	$form = facilities_list_search_form_common(array(), array(), 'sports');
 
 	$form['type'] = array(
 		'#type' => 'textfield',
@@ -415,7 +422,7 @@ function facilities_list_search_form_bbq() {
 						  '10-20' => '10 ~ 20', '20' => '> 20');
 	$cost_opt = array('' => 'Any', '0' => 'Free', '10' => '< 10',
 					  '20' => '< 20', '50' => '< 50');
-	$form = facilities_list_search_form_common($capacity_opt, $cost_opt);
+	$form = facilities_list_search_form_common($capacity_opt, $cost_opt, 'bbq');
 
 	$form['sheltered'] = array(
 		'#type' => 'select',
@@ -794,11 +801,15 @@ function auto_complete_type($string ='') {
 }
 
 
-function auto_complete_name($string ='') {
+function auto_complete_name($string ='', $table = false) {
 	$qry = db_select(FACILITY_TABLE, 'f')
 		->fields('f', array(
 			'name'
 		));
+	if ($table) {
+		$qry->join($table, 'special', 'special.facility_id=f.id');
+	}
+
 	if (strlen($string) > 1) {
 		$qry->condition('f.name', '%'.$string.'%', 'LIKE');
 	}
@@ -815,6 +826,16 @@ function auto_complete_name($string ='') {
 	drupal_json_output($matches);
 }
 
+function auto_complete_name_bbq($string='') {
+	auto_complete_name($string, BBQ_TABLE);
+}
+
+function auto_complete_name_room($string='') {
+	auto_complete_name($string, ROOM_TABLE);
+}
+function auto_complete_name_sports($string='') {
+	auto_complete_name($string, SPORTS_TABLE);
+}
 
 function format_date_string($str) {
 	return date('j M', strtotime($str));
