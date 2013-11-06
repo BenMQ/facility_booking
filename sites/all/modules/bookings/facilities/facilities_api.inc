@@ -86,7 +86,7 @@ function facilities_list_common_query($search, $table) {
 		$range_int[] = intval($range[0]);
 		if (count($range) > 0) {
 			$range_int[] = intval($range[1]);
-			$qry->condition('f.capacity', $range_int);
+			$qry->condition('f.capacity', $range_int, 'BETWEEN');
 		} else {
 			$qry->condition('f.capacity', $range_int[0], '>');
 		}
