@@ -859,3 +859,13 @@ function db_execute($qry) {
 	//dpq($qry);
 	return $qry->execute();
 }
+
+function is_enrolled() {
+	global $user;
+	$qry = db_select(UNI_TABLE, 'u')
+		->condition('user_id', $user->uid)
+		->fields('u');
+	$res = $qry->execute();
+	return is_admin() || ($res->rowCount() > 0);
+}
+

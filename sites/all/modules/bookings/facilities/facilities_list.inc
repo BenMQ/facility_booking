@@ -43,6 +43,10 @@ function facilities_view_sports_submit($form, &$form_state) {
 }
 
 function facilities_view_room($form, &$form_state) {
+	if (!is_enrolled()) {
+		drupal_goto('facilities/enroll');
+	}
+
 	if (isset($form_state['values'])) {
 		$values = $form_state['values'];
 	} else {

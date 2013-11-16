@@ -3,6 +3,15 @@ require_once(drupal_get_path('module', 'facilities') . '/facilities_constants.ph
 require_once(drupal_get_path('module', 'facilities') . '/facilities_api.inc');
 
 function facilities_menu() {
+	$items[FACILITIES_MODULE_NAME. '/enroll'] = array(
+		'title' => 'Select University',
+		'page callback' => 'drupal_get_form',
+		'page arguments' => array('facilities_enrollment'),
+		'access callback' => 'logged_in',
+		'file' => 'facilities_enrollment.inc',
+		'type' => MENU_CALLBACK,
+	);
+
 	$items[FACILITIES_MODULE_NAME. '/view'] = array(
 		'title' => t('Browse Facilities'),
 		'page callback' => 'drupal_get_form',
@@ -70,7 +79,7 @@ function facilities_menu() {
 	);
 
 	$items[FACILITIES_MODULE_NAME . '/edit'] = array(
-		'title' => t('Manage Facilities'),
+		'title' => t('Add New Facility'),
 		'page callback' => 'drupal_get_form',
 		'page arguments' => array('facilities_edit_new'),
 		'access callback' => 'is_admin',
