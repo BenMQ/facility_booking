@@ -74,6 +74,9 @@ function facilities_list_common_query($search, $table) {
 		$qry->condition('f.university', get_uni());
 	}
 
+	if (isset($search['name']) && $search['name']) {
+		$qry->condition('f.name', '%'.$search['name'].'%', 'LIKE');
+	}
 
 	if (isset($search['indoor']) && $search['indoor']) {
 		$value = $search['indoor'] === 'outdoor' ? 0 : 1;

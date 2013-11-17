@@ -2,6 +2,19 @@
 require_once(drupal_get_path('module', 'facilities') . '/facilities_constants.php');
 require_once(drupal_get_path('module', FACILITIES_MODULE_NAME) . '/facilities_api.inc');
 
+function facilities_landing($form, &$form_state) {
+	if (logged_in()) {
+		drupal_goto('facilities/view');
+	}
+
+	$form['list'] = array(
+		'#type' => 'item',
+		'#markup' => '<h4>Please login.</h4>'
+	);
+
+	return $form;
+}
+
 function facilities_view_bbq($form, &$form_state) {
 	if (isset($form_state['values'])) {
 		$values = $form_state['values'];
