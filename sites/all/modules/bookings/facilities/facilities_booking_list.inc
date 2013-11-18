@@ -41,7 +41,7 @@ function facilities_booking_edit($form, &$form_state, $booking_id) {
 	if ($booking && ($booking->user_id == $user->uid || is_admin())) {
 		$form = facilities_view_item($form, $form_state, $booking->facility_id, $booking->date, $booking->start, $booking->end);
 	} else {
-		drupal_not_found();
+		drupal_access_denied();
 		return;
 	}
 	$form['notice'] = array(
