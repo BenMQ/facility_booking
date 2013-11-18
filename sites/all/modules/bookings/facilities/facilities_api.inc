@@ -87,7 +87,7 @@ function facilities_list_common_query($search, $table) {
 		$range = explode('-', $search['capacity']);
 		$range_int = array();
 		$range_int[] = intval($range[0]);
-		if (count($range) > 0) {
+		if (count($range) > 1) {
 			$range_int[] = intval($range[1]);
 			$qry->condition('f.capacity', $range_int, 'BETWEEN');
 		} else {
@@ -393,6 +393,7 @@ function facilities_render_sports($entry, $with_action = true) {
 		if ($with_action) {
 			$action = l('View / Book', FACILITIES_MODULE_NAME . '/view/sports/' . $sports->id);
 			$action .= '<br />';
+			if (is_admin())
 			$action .= l('Edit information', FACILITIES_MODULE_NAME . '/edit/' . $sports->id);
 			$row[] = $action;
 		}
@@ -514,6 +515,7 @@ function facilities_render_bbq($entry, $with_action = true) {
 		if ($with_action) {
 			$action = l('View / Book', FACILITIES_MODULE_NAME . '/view/bbq/' . $bbq->id);
 			$action .= '<br />';
+			if (is_admin())
 			$action .= l('Edit information', FACILITIES_MODULE_NAME . '/edit/' . $bbq->id);
 			$row[] = $action;
 		}

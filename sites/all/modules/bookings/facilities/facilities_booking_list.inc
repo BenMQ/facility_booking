@@ -56,11 +56,19 @@ function facilities_booking_edit($form, &$form_state, $booking_id) {
 		'#type' => 'hidden',
 		'#value' => $booking->facility_id
 	);
+
+	$form['delete'] = array(
+		'#type' => 'button',
+		'#value' => 'Delete Booking'
+	);
 	return $form;
 }
 
 
 function facilities_booking_edit_validate($form, &$form_state) {
+	if (isset($form_state['clicked_button']) && $form_state['clicked_button']['#value'] == 'Delete Booking') {
+		drupal_goto('booking/delete/' . $form_state['values']['booking_id']);
+	}
 	if ($form_state['values']['from'] >= $form_state['values']['to']) {
 		form_error($form['to'], 'Invalid time range.');
 	}
